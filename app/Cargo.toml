@@ -1,0 +1,84 @@
+[package]
+name = "alertapp"
+version = "0.2.3"
+edition = "2024"
+description = "Slint 即时提醒：MQTT 订阅/发布，息屏亮屏/震动/响铃/弹窗提醒"
+
+# 本包只产出 cdylib（Android）+ rlib（给 tools 里的桌面程序复用）。
+# 注意：本包不要加 [[bin]] —— cargo-apk 按包名找 cdylib 产物时遇到 bin 会
+# panic "Bin is not compatible with Cdylib"；桌面程序都在 tools 包里。
+[lib]
+name = "alertapp"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+slint = { version = "1.17.1", default-features = false, features = ["std", "backend-winit", "renderer-femtovg", "compat-1-2"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = "0.4"
+log = "0.4"
+anyhow = "1"
+# MQTT 客户端：不用默认的 use-rustls（会引入 aws-lc-rs，Windows 编译麻烦），
+# 改为自带 ring provider 的 rustls 栈
+rumqttc = { version = "0.25", default-features = false, features = ["use-rustls-no-provider"] }
+tokio = { version = "1", features = ["rt", "sync", "time", "macros"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-pemfile = "2"
+webpki-roots = "0.26"
+
+[target.'cfg(target_os = "android")'.dependencies]
+# 仅在编译 Android 时，开启 slint 的 android 后端特性（与 slint-learn 保持一致）
+slint = { version = "1.17.1", default-features = false, features = ["backend-android-activity-06", "renderer-femtovg", "std"] }
+jni = "0.21"
+ndk-context = "0.1"
+android_logger = "0.14"
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+env_logger = "0.11"
+notify-rust = "4"
+
+[build-dependencies]
+slint-build = "1.17.1"
+
+# ── cargo-apk 打包配置（同 slint-learn）────────────────────────────
+[package.metadata.android]
+# arm64 给真机、x86_64 给模拟器（打通用包）
+build_targets = ["aarch64-linux-android", "x86_64-linux-android"]
+# 安卓资源目录（启动图标 mipmap-* / 主题 / 通知小图标 drawable）
+resources = "res"
+
+[package.metadata.android.application]
+label = "即时提醒"
+icon = "@mipmap/ic_launcher"
+theme = "@style/AppTheme"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.INTERNET"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.WAKE_LOCK"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.VIBRATE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.POST_NOTIFICATIONS"
+
+# 全屏意图：息屏时点亮屏幕弹出提醒（Android 14+ 需用户在通知设置里确认）
+[[package.metadata.android.uses_permission]]
+name = "android.permission.USE_FULL_SCREEN_INTENT"
+
+# 申请电池优化白名单（保活）
+[[package.metadata.android.uses_permission]]
+name = "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+
+[package.metadata.android.sdk]
+min_sdk_version = 24
+target_sdk_version = 35
+
+# release 签名：密钥文件 release.keystore 已被 .gitignore 排除，不入库。
+# 仓库里没有密钥时，release 打包会失败；本地保留该文件即可正常打包。
+# 密码沿用本地约定，方便下次直接打包（此密码仅用于本项目自签名）。
+[package.metadata.android.signing.release]
+path = "release.keystore"
+keystore_password = "alertapp2026"

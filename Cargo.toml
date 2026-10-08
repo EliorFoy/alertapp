@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["app", "tools"]
+
+# release 体积/性能优化（workspace 级配置，对成员生效）
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

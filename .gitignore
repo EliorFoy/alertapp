@@ -1,0 +1,20 @@
+# Rust / cargo 构建产物
+/target
+**/*.rs.bk
+
+# 签名密钥与密码：绝不入库
+*.keystore
+*.jks
+*.key
+keystore.properties
+app/release.keystore
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# 本地日志与临时文件
+*.log

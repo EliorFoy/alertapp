@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 应用主题：无 ActionBar；浅色 UI 配深色系统图标（时间/电量在浅色背景上可读）。
+         windowLightStatusBar 需 API 23+，windowLightNavigationBar 需 API 27+，低版本自动忽略。
+         windowBackground 与 UI 背景色一致，避免启动闪色。 -->
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">#FFEEF1F6</item>
+    </style>
+</resources>
